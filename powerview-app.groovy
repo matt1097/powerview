@@ -2,6 +2,7 @@
  * Hunter Douglas PowerView Hub SmartApp (service manager)
  * Copyright (c) 2017 Johnvey Hwang
  * Ported to Hubitat by Steve Borenstein 03/2019
+ * Ported shade collections to Hubitat by matt1097 03/2020 based on Steve Borenstein's work
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +21,7 @@
 definition(
   name: "Hunter Douglas PowerView",
   namespace: "johnvey",
-  author: "Johnvey Hwang, Ported by Steve Borestein",
+  author: "Johnvey Hwang, Ported by Steve Borestein, matt1097",
   description: "Controls shades and scenes managed by your PowerView hub",
   importUrl: "https://raw.githubusercontent.com/matt1097/powerview/master/powerview-app.groovy",
   category: "My Apps",
@@ -63,11 +64,14 @@ def singlePagePref() {
             fetchHubInfo()
             fetchAllShades()
             fetchAllScenes()
+            fetchAllSceneCollections()
             def foundShades = getDiscoveredShadeList()
             def foundScenes = getDiscoveredSceneList()
+            def foundSceneCollections = getDiscoveredSceneCollectionList()
             def shadeCount = foundShades.size()
             def sceneCount = foundScenes.size()
-            log.info("pref.singlePagePref - shadeCount=$shadeCount, sceneCount=$sceneCount")
+            def sceneCollectionCount = foundSceneCollections.size()
+            log.info("pref.singlePagePref - shadeCount=$shadeCount, sceneCount=$sceneCount, sceneCollectionCount=$sceneCollectionCount")
 
             section("Shades") {
                 if (shadeCount > 0) {
@@ -98,6 +102,21 @@ def singlePagePref() {
                     paragraph "Searching for installed scenes..."
                 }
             }
+
+            section("Scene Collections") {
+                if (sceneCollectionCount > 0) {
+                    input(
+                        name: "selectedSceneCollections", 
+                        title: "Linked scene collections (${sceneCollectionCount} available)", 
+                        type: "enum", 
+                        options: foundSceneCollections,
+                        multiple: true, 
+                        required: false
+                    )
+                } else {
+                    paragraph "Searching for installed scene collections..."
+                }
+            }
         }
     }
 }
@@ -126,7 +145,7 @@ def getHubID() {
     } else {
         def hubs = location.hubs.findAll { 
             //it.type == hubitat.device.HubType.PHYSICAL 
-			it.type == location.hubs.findAll{ t -> t.type == "PHYSICAL" }
+            it.type == location.hubs.findAll{ t -> t.type == "PHYSICAL" }
         } 
         if (hubs.size() == 1) hubID = hubs[0].id 
     }
@@ -140,6 +159,7 @@ def getDeviceId(deviceType, pvId) {
     switch (deviceType) {
         case 'shade':
         case 'scene':
+        case 'scenecollection':
             // valid
             break
         default:
@@ -267,6 +287,54 @@ def _fetchAllScenesCallback(response) {
     }
 	log.info "_fetchAllScenesCallback(status=${response.status}) scenes=${state.discoveredScenes.keySet()}"
     return state.discoveredScenes
+}
+
+/**
+ * Fetches all managed scene configs
+ */
+def fetchAllSceneCollections() {
+    return sendRequest('GET', '/api/scenecollections', null, _fetchAllSceneCollectionsCallback)
+}
+
+/**
+ * Handles response for scene configs
+ */
+def _fetchAllSceneCollectionsCallback(response) {
+    state.discoveredSceneCollections = [:]
+
+    response.json.sceneCollectionData?.each {
+        // start with the config info from PV
+        def sceneCollectionConfig = it.clone()
+
+        // add our custom keys
+        def sceneCollectionLabel = new String(it.name.decodeBase64())
+        def enumLabel = "${sceneCollectionLabel} (${it.id})"
+        sceneCollectionConfig.label = sceneCollectionLabel // plain english name
+        sceneCollectionConfig.enumLabel = enumLabel // awkward label for use with prefs
+        sceneCollectionConfig.deviceNetworkId = getDeviceId('scenecollection', it.id)
+
+        state.discoveredSceneCollections[enumLabel] = sceneCollectionConfig
+    }
+	log.info "_fetchAllSceneCollectionsCallback(status=${response.status}) scenes=${state.discoveredSceneCollections.keySet()}"
+    return state.discoveredSceneCollections
+}
+
+/**
+ * Returns a flat list of scene names that can be rendered by a list control
+ */
+def getDiscoveredSceneCollectionList() {
+    def ret = []
+    state.discoveredSceneCollections?.each { key, value ->
+        ret.add(value.enumLabel)
+    }
+    return ret
+}
+
+/**
+ * Returns the device ID associated with an enumLabel
+ */
+def sceneCollectionEnumToId(enumLabel) {
+    return state.discoveredSceneCollections[enumLabel]?.deviceNetworkId
 }
 
 /**
@@ -423,6 +491,77 @@ def removeAddedScenes() {
     state.addedSceneIds = []
 }
 
+/**
+ * Install the scene collections that the user selected in the config
+ */
+def installSelectedSceneCollections() {
+    log.info("installSelectedSceneCollections() selectedSceneCollections=${settings.selectedSceneCollections}")
+
+    // remove the scene collections that are installed but are not checked by the user
+    def toRemove = getDiscoveredSceneCollectionList() - settings.selectedSceneCollections
+    toRemove?.each {
+        def deviceId = sceneCollectionEnumToId(it)
+        log.info("Remove scene collection deviceId=$deviceId")
+        try {
+            deleteChildDevice(deviceId)
+        } catch (e) {
+            log.warn(e)
+        }
+    }
+
+    // iterate over the enum label
+    settings.selectedSceneCollections?.each {
+        installSceneCollection(it)
+    }
+}
+
+/**
+ * Installs an individual scene collection device handler
+ */
+def installSceneCollection(enumLabel) {
+    // get scene info already fetched
+    def sceneCollectionInfo = state.discoveredSceneCollections.get(enumLabel)
+    if (!sceneCollectionInfo) {
+        log.error("installSceneCollection failed; did not find $enumLabel in state.discoveredSceneCollections")
+        return
+    }
+
+    // check if device is already installed
+    def currentChildDevices = getChildDevices()
+    log.debug("current child devices: ${currentChildDevices}")
+    def selectedDevice = currentChildDevices.find { sceneCollectionInfo.deviceNetworkId }
+    def dev
+    if (selectedDevice) {
+        dev = getChildDevices()?.find {
+            it.deviceNetworkId == sceneCollectionInfo.deviceNetworkId
+        }
+    }
+
+    if (!dev) {
+        def addedDevice = addChildDevice(
+            "johnvey", 
+            "Hunter Douglas PowerView Scene Collection", 
+            sceneCollectionInfo.deviceNetworkId,
+            getHubID(),
+            [name: sceneCollectionInfo.id, label: sceneCollectionInfo.label, completedSetup: true]
+        )
+        // log the ID to the app for later use
+        state.addedSceneCollectionIds = state.addedSceneCollectionIds ?: []
+        state.addedSceneCollectionIds.add(sceneCollectionInfo.deviceNetworkId)
+        log.info "ADDED: label=${sceneCollectionInfo.label} deviceId=${sceneCollectionInfo.deviceNetworkId}"
+    } else {
+        log.debug("SKIP: deviceId=${sceneCollectionInfo.deviceNetworkId}")
+    }
+}
+
+def removeAddedSceneCollections() {
+    state.addedSceneCollectionIds?.each {
+        log.info("Remove scene collection deviceId=$it")
+        deleteChildDevice(it)
+    }
+    state.addedSceneCollectionIds = []
+}
+
 
 // ----------------------------------------------------------------------------
 // HTTP methods
@@ -471,6 +610,7 @@ def updated() {
     log.info "CMD updated"
     installSelectedShades()
     installSelectedScenes()
+    installSelectedSceneCollections()
 }
 
 /**
