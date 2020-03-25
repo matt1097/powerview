@@ -26,7 +26,7 @@ metadata {
     definition (
         name: "Hunter Douglas PowerView Scene Collection", 
         namespace: "johnvey", 
-        importUrl: "https://raw.githubusercontent.com/matt1097/powerview/master/powerview-driver_collection.groovy",
+        importUrl: "https://raw.githubusercontent.com/matt1097/powerview/master/powerview-driver_shade-collection.groovy",
         author: "Johnvey Hwang, ported by matt1097"
     ) {
         // tags
