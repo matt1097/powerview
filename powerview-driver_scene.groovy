@@ -26,6 +26,7 @@ metadata {
     definition (
         name: "Hunter Douglas PowerView Scene", 
         namespace: "johnvey", 
+        importUrl: "https://raw.githubusercontent.com/matt1097/powerview/master/powerview-driver_scene.groovy",
         author: "Johnvey Hwang ported by Steve Borenstein"
     ) {
         // tags

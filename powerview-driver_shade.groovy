@@ -29,6 +29,7 @@ metadata {
     definition (
         name: "Hunter Douglas PowerView Shade", 
         namespace: "johnvey", 
+        importUrl: "https://raw.githubusercontent.com/matt1097/powerview/master/powerview-driver_shade.groovy",
         author: "Johnvey Hwang, ported by Steve Borenstein"
     ) {
         // tags

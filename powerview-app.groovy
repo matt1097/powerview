@@ -22,6 +22,7 @@ definition(
   namespace: "johnvey",
   author: "Johnvey Hwang, Ported by Steve Borestein",
   description: "Controls shades and scenes managed by your PowerView hub",
+  importUrl: "https://raw.githubusercontent.com/matt1097/powerview/master/powerview-app.groovy",
   category: "My Apps",
   iconUrl: "https://silver-saint.netlify.com/assets/powerview-icon.png",
   iconX2Url: "https://silver-saint.netlify.com/assets/powerview-icon-2x.png",
