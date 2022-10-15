@@ -34,6 +34,7 @@ metadata {
 
         // device capabilities
         capability "Momentary"
+        capability "PushableButton"
         capability "Switch"
     }
 
@@ -119,8 +120,14 @@ def updated() {
 
 // implement the momentary method
 def push() {
-    log.debug("CMD push(${state.pvSceneId})")
+    log.debug("CMD push() ${state.pvSceneCollectionId}")
     sendRequest("GET", "/api/scenecollections?sceneCollectionId=${state.pvSceneCollectionId}")
+}
+
+//implement pushable button method
+def push(buttonNumber) {
+    log.debug("CMD push(${buttonNumber}) ${state.pvSceneCollectionId}")
+    return push()
 }
 
 def on() {
