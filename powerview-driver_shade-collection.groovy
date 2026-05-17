@@ -17,37 +17,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 // ----------------------------------------------------------------------------
 // configuration
 // ----------------------------------------------------------------------------
 
 metadata {
-    definition (
-        name: "Hunter Douglas PowerView Scene Collection", 
-        namespace: "johnvey", 
-        importUrl: "https://raw.githubusercontent.com/matt1097/powerview/master/powerview-driver_shade-collection.groovy",
-        author: "Johnvey Hwang, ported by matt1097"
+    definition(
+        name: 'Hunter Douglas PowerView Scene Collection',
+        namespace: 'johnvey',
+        importUrl: 'https://raw.githubusercontent.com/matt1097/powerview/master/powerview-driver_shade-collection.groovy',
+        author: 'Johnvey Hwang, ported by matt1097'
     ) {
         // tags
-        capability "Actuator"
+        capability 'Actuator'
 
         // device capabilities
-        capability "Momentary"
-        capability "PushableButton"
-        capability "Switch"
+        capability 'Momentary'
+        capability 'PushableButton'
+        capability 'Switch'
     }
 
     tiles(scale: 2) {
-        standardTile("on", "device.windowShade", width: 3, height: 3,
-                    inactiveLabel: false, decoration: "flat") {
-            state("default", label:'Activate', action:"push",
-                icon:"st.switches.light.on")
+        standardTile('on', 'device.windowShade', width: 3, height: 3,
+                    inactiveLabel: false, decoration: 'flat') {
+            state('default', label:'Activate', action:'push',
+                icon:'st.switches.light.on')
         }
-        main(["on"])
+        main(['on'])
     }
 }
-
 
 // ----------------------------------------------------------------------------
 // hub comm methods
@@ -89,7 +87,6 @@ def sendRequestCallback(response) {
     }
 }
 
-
 // ----------------------------------------------------------------------------
 // app lifecycle hooks
 // ----------------------------------------------------------------------------
@@ -100,7 +97,8 @@ def setHubInfo() {
     state.hubIP = parent.hubIP
     state.hubPort = DEFAULT_HUB_PORT //parent.hubPort
     state.pvSceneCollectionId = device.name
-    log.debug("called setHubInfo() - hubMAC=${state.hubMAC} hubIP=${state.hubIP} hubPort=${state.hubPort} pvSceneId=${state.pvSceneCollectionId}")
+    log.debug("called setHubInfo() - hubMAC=${state.hubMAC} hubIP=${state.hubIP} " +
+              "hubPort=${state.hubPort} pvSceneId=${state.pvSceneCollectionId}")
 }
 
 // parse hub response into attributes
@@ -121,7 +119,7 @@ def updated() {
 // implement the momentary method
 def push() {
     log.debug("CMD push() ${state.pvSceneCollectionId}")
-    sendRequest("GET", "/api/scenecollections?sceneCollectionId=${state.pvSceneCollectionId}")
+    sendRequest('GET', "/api/scenecollections?sceneCollectionId=${state.pvSceneCollectionId}")
 }
 
 //implement pushable button method
@@ -131,11 +129,11 @@ def push(buttonNumber) {
 }
 
 def on() {
-    log.debug("CMD on()")
+    log.debug('CMD on()')
     return push()
 }
 
 def off() {
-    log.debug("CMD off()")
+    log.debug('CMD off()')
     // pass
 }

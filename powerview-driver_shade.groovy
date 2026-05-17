@@ -18,36 +18,32 @@
 
 import groovy.transform.Field
 
-// TODO update when out of beta
-//include 'asynchttp_v1'
-
 // ----------------------------------------------------------------------------
 // configuration
 // ----------------------------------------------------------------------------
 
 metadata {
-    definition (
-        name: "Hunter Douglas PowerView Shade", 
-        namespace: "johnvey", 
-        importUrl: "https://raw.githubusercontent.com/matt1097/powerview/master/powerview-driver_shade.groovy",
-        author: "Johnvey Hwang, ported by Steve Borenstein"
+    definition(
+        name: 'Hunter Douglas PowerView Shade',
+        namespace: 'johnvey',
+        importUrl: 'https://raw.githubusercontent.com/matt1097/powerview/master/powerview-driver_shade.groovy',
+        author: 'Johnvey Hwang, ported by Steve Borenstein'
     ) {
         // tags
-        capability "Actuator"
-        capability "Sensor"
+        capability 'Actuator'
+        capability 'Sensor'
 
         // device capabilities
-        capability "Battery"
-        capability "Light"
-        capability "Polling"
-        capability "Refresh"
-        capability "Switch"
-        capability "Switch Level"
-        capability "Window Shade"
+        capability 'Battery'
+        capability 'Light'
+        capability 'Polling'
+        capability 'Refresh'
+        capability 'Switch'
+        capability 'Switch Level'
+        capability 'Window Shade'
 
         // custom commands
-        command "jog"
-
+        command 'jog'
     }
 
     simulator {
@@ -55,77 +51,76 @@ metadata {
 
     tiles(scale: 2) {
         // define top color status block
-        multiAttributeTile(name:"windowShade", type: "lighting", width: 6, height: 4, canChangeIcon: true) {
-            tileAttribute ("device.windowShade", key: "PRIMARY_CONTROL") {
-                attributeState "open", label:'V. Open', action:"windowShade.close", icon:"st.Home.home9", backgroundColor:"#00a0dc", nextState:"closing"
-                attributeState "partial_vane", label:'V. Partial', action:"windowShade.close", icon:"st.Home.home9", backgroundColor:"#00a0dc", nextState:"closing"
-                attributeState "closed", label:'V. Closed', action:"windowShade.open", icon:"st.Home.home9", backgroundColor:"#ffffff", nextState:"opening"
-                attributeState "opening", label:'Opening', action:"windowShade.close", icon:"st.Home.home9", backgroundColor:"#00a0dc", nextState:"open"
-                attributeState "closing", label:'Closing', action:"windowShade.open", icon:"st.Home.home9", backgroundColor:"#ffffff", nextState:"opening"
+        multiAttributeTile(name:'windowShade', type: 'lighting', width: 6, height: 4, canChangeIcon: true) {
+            tileAttribute('device.windowShade', key: 'PRIMARY_CONTROL') {
+                attributeState 'open', label:'V. Open', action:'windowShade.close', icon:'st.Home.home9', backgroundColor:'#00a0dc', nextState:'closing'
+                attributeState 'partial_vane', label:'V. Partial', action:'windowShade.close', icon:'st.Home.home9', backgroundColor:'#00a0dc', nextState:'closing'
+                attributeState 'closed', label:'V. Closed', action:'windowShade.open', icon:'st.Home.home9', backgroundColor:'#ffffff', nextState:'opening'
+                attributeState 'opening', label:'Opening', action:'windowShade.close', icon:'st.Home.home9', backgroundColor:'#00a0dc', nextState:'open'
+                attributeState 'closing', label:'Closing', action:'windowShade.open', icon:'st.Home.home9', backgroundColor:'#ffffff', nextState:'opening'
             }
-            tileAttribute ("device.level", key: "SLIDER_CONTROL") {
-                attributeState "level", label: "${currentValue}", action:"switch level.setLevel"
+            tileAttribute('device.level', key: 'SLIDER_CONTROL') {
+                attributeState 'level', label: "${currentValue}", action:'switch level.setLevel'
             }
         }
 
         //
         // we arrange the tiles so that the up/down pairs make sense as when
         // are in a 3x2 grid
-        // 
+        //
 
         //-- top row --
         // open shade
-        standardTile("open", "device.switch", width: 2, height: 2,
-                    inactiveLabel: false, decoration: "flat") {
-            state("default", label:'Open shade', action:"on",
-                icon:"st.doors.garage.garage-opening")
-        }
+        standardTile('open', 'device.switch', width: 2, height: 2,
+                    inactiveLabel: false, decoration: 'flat') {
+            state('default', label:'Open shade', action:'on',
+                icon:'st.doors.garage.garage-opening')
+                    }
         // open vanes
-        standardTile("on", "device.windowShade", width: 2, height: 2,
-                    inactiveLabel: false, decoration: "flat") {
-            state("default", label:'Open vanes', action:"open",
-                icon:"st.doors.garage.garage-opening")
-        }
+        standardTile('on', 'device.windowShade', width: 2, height: 2,
+                    inactiveLabel: false, decoration: 'flat') {
+            state('default', label:'Open vanes', action:'open',
+                icon:'st.doors.garage.garage-opening')
+                    }
         // refresh
-        standardTile("refresh", "device.switch", width: 2, height: 2,
-                    inactiveLabel: false, decoration: "flat") {
-            state("default", label:'Refresh', action:"refresh",
-                icon:"st.secondary.refresh-icon")
-        }
+        standardTile('refresh', 'device.switch', width: 2, height: 2,
+                    inactiveLabel: false, decoration: 'flat') {
+            state('default', label:'Refresh', action:'refresh',
+                icon:'st.secondary.refresh-icon')
+                    }
 
         //-- middle row --
         // close shade
-        standardTile("close", "device.switch", width: 2, height: 2,
-                    inactiveLabel: false, decoration: "flat") {
-            state("default", label:'Close shade', action:"off",
-                icon:"st.doors.garage.garage-closing")
-        }
+        standardTile('close', 'device.switch', width: 2, height: 2,
+                    inactiveLabel: false, decoration: 'flat') {
+            state('default', label:'Close shade', action:'off',
+                icon:'st.doors.garage.garage-closing')
+                    }
         // close vanes
-        standardTile("off", "device.windowShade", width: 2, height: 2,
-                    inactiveLabel: false, decoration: "flat") {
-            state("default", label:'Close vanes', action:"close",
-                icon:"st.doors.garage.garage-closing")
-        }
+        standardTile('off', 'device.windowShade', width: 2, height: 2,
+                    inactiveLabel: false, decoration: 'flat') {
+            state('default', label:'Close vanes', action:'close',
+                icon:'st.doors.garage.garage-closing')
+                    }
         // battery level
-        valueTile("battery", "device.battery", width: 2, height: 2, decoration: "flat") {
-            state("battery", label:'${currentValue}%\nBattery', defaultState: true, backgroundColors: [
-                [value: 0, color: "#C70039"],
-                [value: 20, color: "#FFFFFF"]
+        valueTile('battery', 'device.battery', width: 2, height: 2, decoration: 'flat') {
+            state('battery', label:"${currentValue}%\nBattery", defaultState: true, backgroundColors: [
+                [value: 0, color: '#C70039'],
+                [value: 20, color: '#FFFFFF']
             ])
         }
 
         //-- bottom row --
         // jog shade
-        standardTile("jog", "device.windowShade", width: 2, height: 2,
-                    inactiveLabel: false, decoration: "flat") {
-            state("default", label:'Jog shade', action:"jog",
-                icon:"st.motion.motion.inactive")
-        }
+        standardTile('jog', 'device.windowShade', width: 2, height: 2,
+                    inactiveLabel: false, decoration: 'flat') {
+            state('default', label:'Jog shade', action:'jog',
+                icon:'st.motion.motion.inactive')
+                    }
 
-        main(["windowShade"])
+        main(['windowShade'])
     }
 }
-
 
 // ----------------------------------------------------------------------------
 // hub comm methods
@@ -138,7 +133,7 @@ metadata {
 // set shade open {"shade":{"id":1694,"positions":{"position1":17508,"posKind1":1}}}
 // set shade closed {"shade":{"id":1694,"positions":{"position1":0,"posKind1":1}}}
 @Field def ShadeComponentType = [
-    SHADE: 1, 
+    SHADE: 1,
     VANE: 3
 ]
 
@@ -169,9 +164,9 @@ private setPosition(int level, int type) {
     // translate to the hub-specific values
     def rawPosition = 0
     if (type == ShadeComponentType.SHADE) {
-        rawPosition = level/100 * ShadeMaxPosition.SHADE
+        rawPosition = level / 100 * ShadeMaxPosition.SHADE
     } else if (type == ShadeComponentType.VANE) {
-        rawPosition = level/100 * ShadeMaxPosition.VANE
+        rawPosition = level / 100 * ShadeMaxPosition.VANE
     }
     rawPosition = (int) rawPosition // round value
     def rawType = type
@@ -216,7 +211,7 @@ private startJog() {
     def path = "/api/shades/${state.pvShadeId}"
     def builder = new groovy.json.JsonBuilder()
     builder.shade {
-        motion "jog"
+        motion 'jog'
     }
     def body = builder.toString()
     return sendRequest('PUT', path, body)
@@ -269,7 +264,7 @@ def sendRequestCallback(response) {
 
 /**
  * Parses the JSON response from the PowerView hub.
- * 
+ *
  * Sample response:
  * {
  *     "shade": {
@@ -299,11 +294,10 @@ def parseShadeData(payload) {
         if (shadeLevel > 0) {
             sendEvent(name: 'switch', value: 'on')
         } else {
-            sendEvent(name: 'switch', value: 'off')            
+            sendEvent(name: 'switch', value: 'off')
         }
         // if shade level is reported, then vane is closed
         sendEvent(name: 'windowShade', value: 'closed')
-
     } else if (shade.positions.posKind1 == ShadeComponentType.VANE) {
         def vaneLevel = (int) shade.positions.position1 / ShadeMaxPosition.VANE * 100
         log.debug("Setting vane level: ${vaneLevel}")
@@ -324,12 +318,11 @@ def parseShadeData(payload) {
     // parse shade battery level info
     if (shade.batteryStrength) {
         // TODO: the 255 max value is a guess; I have not verified this
-        def batteryPerc = Math.round(shade.batteryStrength/255 * 100)
-        //log.debug("Setting shade battery level: ${batteryPerc}")
-        sendEvent(name: 'battery', value: batteryPerc)
+        def batteryPercent = Math.round(shade.batteryStrength / 255 * 100)
+        //log.debug("Setting shade battery level: ${batteryPercent}")
+        sendEvent(name: 'battery', value: batteryPercent)
     }
 }
-
 
 // ----------------------------------------------------------------------------
 // handle commands
@@ -353,12 +346,13 @@ def updated() {
 }
 
 def setHubInfo() {
-	def DEFAULT_HUB_PORT = 80
+    def DEFAULT_HUB_PORT = 80
     state.hubMAC = parent.hubMAC
     state.hubIP = parent.hubIP
     state.hubPort = DEFAULT_HUB_PORT //parent.hubPort
     state.pvShadeId = device.name
-    log.debug("called setHubInfo() - hubMAC=${state.hubMAC} hubIP=${state.hubIP} hubPort=${state.hubPort} pvShadeId=${state.pvShadeId}")
+    log.debug("called setHubInfo() - hubMAC=${state.hubMAC} hubIP=${state.hubIP} " +
+              "hubPort=${state.hubPort} pvShadeId=${state.pvShadeId}")
 }
 
 def poll() {
@@ -401,6 +395,7 @@ def off() {
  * Opens the shade to relative position to open
  * @param level The desired shade level. 0=closed, 99=open
  */
+/* groovylint-disable-next-line UnusedMethodParameter */
 def setLevel(level, rate=0) {
     log.debug "Executing 'setLevel'"
     return setPosition(level, ShadeComponentType.SHADE)
@@ -439,6 +434,6 @@ def presetPosition() {
 }
 
 def jog() {
-    log.debug "Executing jog()"
+    log.debug 'Executing jog()'
     return startJog()
 }

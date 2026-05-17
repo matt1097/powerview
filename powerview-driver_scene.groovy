@@ -17,37 +17,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 // ----------------------------------------------------------------------------
 // configuration
 // ----------------------------------------------------------------------------
 
 metadata {
-    definition (
-        name: "Hunter Douglas PowerView Scene", 
-        namespace: "johnvey", 
-        importUrl: "https://raw.githubusercontent.com/matt1097/powerview/master/powerview-driver_scene.groovy",
-        author: "Johnvey Hwang ported by Steve Borenstein"
+    definition(
+        name: 'Hunter Douglas PowerView Scene',
+        namespace: 'johnvey',
+        importUrl: 'https://raw.githubusercontent.com/matt1097/powerview/master/powerview-driver_scene.groovy',
+        author: 'Johnvey Hwang ported by Steve Borenstein'
     ) {
         // tags
-        capability "Actuator"
+        capability 'Actuator'
 
         // device capabilities
-        capability "Momentary"
-        capability "PushableButton"
-        capability "Switch"
+        capability 'Momentary'
+        capability 'PushableButton'
+        capability 'Switch'
     }
 
     tiles(scale: 2) {
-        standardTile("on", "device.windowShade", width: 3, height: 3,
-                    inactiveLabel: false, decoration: "flat") {
-            state("default", label:'Activate', action:"push",
-                icon:"st.switches.light.on")
+        standardTile('on', 'device.windowShade', width: 3, height: 3,
+                    inactiveLabel: false, decoration: 'flat') {
+            state('default', label:'Activate', action:'push',
+                icon:'st.switches.light.on')
         }
-        main(["on"])
+        main(['on'])
     }
 }
-
 
 // ----------------------------------------------------------------------------
 // hub comm methods
@@ -63,7 +61,7 @@ private getDeviceId(pvId) {
 
 private sendRequest(method, path, body=null) {
     def host = "${state.hubIP}:${state.hubPort}"
-	log.info('Host for sendRequest: ${host}')
+    log.info("Host for sendRequest: ${host}")
     def hubAction = new hubitat.device.HubAction(
         [
             method: method,
@@ -90,14 +88,13 @@ def sendRequestCallback(response) {
     }
 }
 
-
 // ----------------------------------------------------------------------------
 // app lifecycle hooks
 // ----------------------------------------------------------------------------
 
 def setHubInfo() {
-	def DEFAULT_HUB_PORT = 80
-	
+    def DEFAULT_HUB_PORT = 80
+
     state.hubMAC = parent.hubMAC
     state.hubIP = parent.hubIP
     state.hubPort = DEFAULT_HUB_PORT //parent.hubPort
@@ -122,8 +119,8 @@ def updated() {
 
 // implement the momentary method
 def push() {
-	log.debug("CMD push() ${state.pvSceneId}")
-    sendRequest("GET", "/api/scenes?sceneId=${state.pvSceneId}")
+    log.debug("CMD push() ${state.pvSceneId}")
+    sendRequest('GET', "/api/scenes?sceneId=${state.pvSceneId}")
 }
 
 //implement pushable button method
@@ -133,11 +130,11 @@ def push(buttonNumber) {
 }
 
 def on() {
-    log.debug("CMD on()")
+    log.debug('CMD on()')
     return push()
 }
 
 def off() {
-    log.debug("CMD off()")
+    log.debug('CMD off()')
     // pass
 }

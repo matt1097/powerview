@@ -19,42 +19,42 @@
  */
 
 definition(
-  name: "Hunter Douglas PowerView",
-  namespace: "johnvey",
-  author: "Johnvey Hwang, Ported by Steve Borestein, matt1097",
-  description: "Controls shades and scenes managed by your PowerView hub",
-  importUrl: "https://raw.githubusercontent.com/matt1097/powerview/master/powerview-app.groovy",
-  category: "My Apps",
-  iconUrl: "https://silver-saint.netlify.com/assets/powerview-icon.png",
-  iconX2Url: "https://silver-saint.netlify.com/assets/powerview-icon-2x.png",
-  iconX3Url: "https://silver-saint.netlify.com/assets/powerview-icon-3x.png"
+  name: 'Hunter Douglas PowerView',
+  namespace: 'johnvey',
+  author: 'Johnvey Hwang, Ported by Steve Borenstein, matt1097',
+  description: 'Controls shades and scenes managed by your PowerView hub',
+  importUrl: 'https://raw.githubusercontent.com/matt1097/powerview/master/powerview-app.groovy',
+  category: 'My Apps',
+  iconUrl: 'https://silver-saint.netlify.com/assets/powerview-icon.png',
+  iconX2Url: 'https://silver-saint.netlify.com/assets/powerview-icon-2x.png',
+  iconX3Url: 'https://silver-saint.netlify.com/assets/powerview-icon-3x.png'
 )
 
 preferences {
-    page(name: "singlePagePref")
+    page(name: 'singlePagePref')
 }
 
 def singlePagePref() {
     return dynamicPage(
-        name: "singlePagePref", 
-        install: canInstall(), 
-        uninstall: true, 
+        name: 'singlePagePref',
+        install: canInstall(),
+        uninstall: true,
         refreshInterval: getPrefInterval()
     ) {
         // setup basic connection to hub
-        section("Hub setup") {
+        section('Hub setup') {
             input(
-                name: "hubIP", 
-                title: "IP Address", 
-                type: "text", 
-                required: false, 
+                name: 'hubIP',
+                title: 'IP Address',
+                type: 'text',
+                required: false,
                 submitOnChange: true
             )
             if (hubIP) {
                 if (state.hubMAC) {
-                    paragraph(title: "Hub name", "${state.hubName} (${state.hubMAC})")
+                    paragraph(title: 'Hub name', "${state.hubName} (${state.hubMAC})")
                 } else {
-                    paragraph "Fetching hub info..."
+                    paragraph 'Fetching hub info...'
                 }
             }
         }
@@ -73,48 +73,48 @@ def singlePagePref() {
             def sceneCollectionCount = foundSceneCollections.size()
             log.info("pref.singlePagePref - shadeCount=$shadeCount, sceneCount=$sceneCount, sceneCollectionCount=$sceneCollectionCount")
 
-            section("Shades") {
+            section('Shades') {
                 if (shadeCount > 0) {
                     input(
-                        name: "selectedShades", 
-                        title: "Linked shades (${shadeCount} available)", 
-                        type: "enum", 
-                        options: foundShades, 
-                        multiple: true, 
+                        name: 'selectedShades',
+                        title: "Linked shades (${shadeCount} available)",
+                        type: 'enum',
+                        options: foundShades,
+                        multiple: true,
                         required: false
                     )
                 } else {
-                    paragraph "Searching for installed shades..."
+                    paragraph 'Searching for installed shades...'
                 }
             }
 
-            section("Scenes") {
+            section('Scenes') {
                 if (sceneCount > 0) {
                     input(
-                        name: "selectedScenes", 
-                        title: "Linked scenes (${sceneCount} available)", 
-                        type: "enum", 
+                        name: 'selectedScenes',
+                        title: "Linked scenes (${sceneCount} available)",
+                        type: 'enum',
                         options: foundScenes,
-                        multiple: true, 
+                        multiple: true,
                         required: false
                     )
                 } else {
-                    paragraph "Searching for installed scenes..."
+                    paragraph 'Searching for installed scenes...'
                 }
             }
 
-            section("Scene Collections") {
+            section('Scene Collections') {
                 if (sceneCollectionCount > 0) {
                     input(
-                        name: "selectedSceneCollections", 
-                        title: "Linked scene collections (${sceneCollectionCount} available)", 
-                        type: "enum", 
+                        name: 'selectedSceneCollections',
+                        title: "Linked scene collections (${sceneCollectionCount} available)",
+                        type: 'enum',
                         options: foundSceneCollections,
-                        multiple: true, 
+                        multiple: true,
                         required: false
                     )
                 } else {
-                    paragraph "Searching for installed scene collections..."
+                    paragraph 'Searching for installed scene collections...'
                 }
             }
         }
@@ -127,11 +127,11 @@ def canInstall() {
 }
 
 // TODO: should this back off the refresh rate if we have an IP?
+/* groovylint-disable-next-line GetterMethodCouldBeProperty */
 def getPrefInterval() {
     return 60
-    // state.hubIP ? 5 : 15
+// state.hubIP ? 5 : 15
 }
-
 
 // ----------------------------------------------------------------------------
 // utility methods
@@ -143,11 +143,13 @@ def getHubID() {
     if (myHub) {
         hubID = myHub.id
     } else {
-        def hubs = location.hubs.findAll { 
-            //it.type == hubitat.device.HubType.PHYSICAL 
-            it.type == location.hubs.findAll{ t -> t.type == "PHYSICAL" }
-        } 
-        if (hubs.size() == 1) hubID = hubs[0].id 
+        def hubs = location.hubs.findAll { aHub ->
+            //it.type == hubitat.device.HubType.PHYSICAL
+            aHub.type == location.hubs.findAll { t -> t.type == 'PHYSICAL' }
+        }
+        if (hubs.size() == 1) {
+            hubID = hubs[0].id
+        }
     }
     return hubID
 }
@@ -177,67 +179,66 @@ def parseDeviceType(deviceNetworkId) {
     return deviceNetworkId.tokenize(';')[0]
 }
 
-
 // ----------------------------------------------------------------------------
 // discovery methods
 // ----------------------------------------------------------------------------
 
 /**
  * Fetches PV hub information
- * 
+ *
  * Requires that the user input the `hubIP` value
  */
 def fetchHubInfo() {
-    log.info("fetchHubInfo()")
+    log.info('fetchHubInfo()')
 
     def DEFAULT_HUB_PORT = 80
 
     if (settings.hubIP) {
         state.hubIP = settings.hubIP
         state.hubPort = DEFAULT_HUB_PORT
-        sendRequest('GET', '/api/userdata', null, _fetchHubInfoCallback)
+        sendRequest('GET', '/api/userdata', null, fetchHubInfoCallback)
     } else {
-        log.debug("no hubIP set, skipping fetch")
+        log.debug('no hubIP set, skipping fetch')
     }
 }
 
 /**
  * Handles base hub info response
  */
-def _fetchHubInfoCallback(response) {
+def fetchHubInfoCallback(response) {
     def userData = response.json.userData
     state.hubName = new String(userData.hubName.decodeBase64())
-    state.hubMAC = userData.macAddress.replaceAll(":", "")
-    log.info("_fetchHubInfoCallback(status=${response.status}) hubName=${state.hubName} hubMAC=${state.hubMAC}")
+    state.hubMAC = userData.macAddress.replaceAll(':', '')
+    log.info("fetchHubInfoCallback(status=${response.status}) hubName=${state.hubName} hubMAC=${state.hubMAC}")
 }
 
 /**
  * Fetches all managed shade configs
  */
 def fetchAllShades() {
-    return sendRequest('GET', '/api/shades', null, _fetchAllShadesCallback)
+    return sendRequest('GET', '/api/shades', null, fetchAllShadesCallback)
 }
 
 /**
  * Handles response for shade configs
  */
-def _fetchAllShadesCallback(response) {
+def fetchAllShadesCallback(response) {
     state.discoveredShades = [:]
 
-    response.json.shadeData?.each {
+    response.json.shadeData?.each { aShade ->
         // start with the config info from PV
-        def shadeConfig = it.clone()
+        def shadeConfig = aShade.clone()
 
         // add our custom keys
-        def shadeLabel = new String(it.name.decodeBase64())
-        def enumLabel = "${shadeLabel} (${it.id})"
+        def shadeLabel = new String(aShade.name.decodeBase64())
+        def enumLabel = "${shadeLabel} (${aShade.id})"
         shadeConfig.label = shadeLabel // plain english name
-        shadeConfig.enumLabel = enumLabel // awkward label for use with prefs
-        shadeConfig.deviceNetworkId = getDeviceId('shade', it.id)
+        shadeConfig.enumLabel = enumLabel // awkward label for use with preferences
+        shadeConfig.deviceNetworkId = getDeviceId('shade', aShade.id)
 
         state.discoveredShades[enumLabel] = shadeConfig
     }
-	log.info "_fetchAllShadesCallback(status=${response.status}) scenes=${state.discoveredShades.keySet()}"
+    log.info "fetchAllShadesCallback(status=${response.status}) scenes=${state.discoveredShades.keySet()}"
     return state.discoveredShades
 }
 
@@ -263,29 +264,29 @@ def shadeEnumToId(enumLabel) {
  * Fetches all managed scene configs
  */
 def fetchAllScenes() {
-    return sendRequest('GET', '/api/scenes', null, _fetchAllScenesCallback)
+    return sendRequest('GET', '/api/scenes', null, fetchAllScenesCallback)
 }
 
 /**
  * Handles response for scene configs
  */
-def _fetchAllScenesCallback(response) {
+def fetchAllScenesCallback(response) {
     state.discoveredScenes = [:]
 
-    response.json.sceneData?.each {
+    response.json.sceneData?.each { aScene ->
         // start with the config info from PV
-        def sceneConfig = it.clone()
+        def sceneConfig = aScene.clone()
 
         // add our custom keys
-        def sceneLabel = new String(it.name.decodeBase64())
-        def enumLabel = "${sceneLabel} (${it.id})"
+        def sceneLabel = new String(aScene.name.decodeBase64())
+        def enumLabel = "${sceneLabel} (${aScene.id})"
         sceneConfig.label = sceneLabel // plain english name
-        sceneConfig.enumLabel = enumLabel // awkward label for use with prefs
-        sceneConfig.deviceNetworkId = getDeviceId('scene', it.id)
+        sceneConfig.enumLabel = enumLabel // awkward label for use with preferences
+        sceneConfig.deviceNetworkId = getDeviceId('scene', aScene.id)
 
         state.discoveredScenes[enumLabel] = sceneConfig
     }
-	log.info "_fetchAllScenesCallback(status=${response.status}) scenes=${state.discoveredScenes.keySet()}"
+    log.info "fetchAllScenesCallback(status=${response.status}) scenes=${state.discoveredScenes.keySet()}"
     return state.discoveredScenes
 }
 
@@ -293,29 +294,29 @@ def _fetchAllScenesCallback(response) {
  * Fetches all managed scene configs
  */
 def fetchAllSceneCollections() {
-    return sendRequest('GET', '/api/scenecollections', null, _fetchAllSceneCollectionsCallback)
+    return sendRequest('GET', '/api/scenecollections', null, fetchAllSceneCollectionsCallback)
 }
 
 /**
  * Handles response for scene configs
  */
-def _fetchAllSceneCollectionsCallback(response) {
+def fetchAllSceneCollectionsCallback(response) {
     state.discoveredSceneCollections = [:]
 
-    response.json.sceneCollectionData?.each {
+    response.json.sceneCollectionData?.each { aCollection ->
         // start with the config info from PV
-        def sceneCollectionConfig = it.clone()
+        def sceneCollectionConfig = aCollection.clone()
 
         // add our custom keys
-        def sceneCollectionLabel = new String(it.name.decodeBase64())
-        def enumLabel = "${sceneCollectionLabel} (${it.id})"
+        def sceneCollectionLabel = new String(aCollection.name.decodeBase64())
+        def enumLabel = "${sceneCollectionLabel} (${aCollection.id})"
         sceneCollectionConfig.label = sceneCollectionLabel // plain english name
-        sceneCollectionConfig.enumLabel = enumLabel // awkward label for use with prefs
-        sceneCollectionConfig.deviceNetworkId = getDeviceId('scenecollection', it.id)
+        sceneCollectionConfig.enumLabel = enumLabel // awkward label for use with preferences
+        sceneCollectionConfig.deviceNetworkId = getDeviceId('scenecollection', aCollection.id)
 
         state.discoveredSceneCollections[enumLabel] = sceneCollectionConfig
     }
-	log.info "_fetchAllSceneCollectionsCallback(status=${response.status}) scenes=${state.discoveredSceneCollections.keySet()}"
+    log.info "fetchAllSceneCollectionsCallback(status=${response.status}) scenes=${state.discoveredSceneCollections.keySet()}"
     return state.discoveredSceneCollections
 }
 
@@ -355,7 +356,6 @@ def sceneEnumToId(enumLabel) {
     return state.discoveredScenes[enumLabel]?.deviceNetworkId
 }
 
-
 // ----------------------------------------------------------------------------
 // device handler methods
 // ----------------------------------------------------------------------------
@@ -368,8 +368,8 @@ def installSelectedShades() {
 
     // remove the shades that are installed but are not checked by the user
     def toRemove = getDiscoveredShadeList() - settings.selectedShades
-    toRemove?.each {
-        def deviceId = shadeEnumToId(it)
+    toRemove?.each { aShade ->
+        def deviceId = shadeEnumToId(aShade)
         log.info("Remove shade deviceId=$deviceId")
         try {
             deleteChildDevice(deviceId)
@@ -380,8 +380,8 @@ def installSelectedShades() {
     // state.addedShadeIds = []
 
     // iterate over the enum label
-    settings.selectedShades?.each {
-        installShade(it)
+    settings.selectedShades?.each { aShade ->
+        installShade(aShade)
     }
 }
 
@@ -401,15 +401,15 @@ def installShade(enumLabel) {
     def selectedDevice = currentChildDevices.find { shadeInfo.deviceNetworkId }
     def dev
     if (selectedDevice) {
-        dev = getChildDevices()?.find {
-            it.deviceNetworkId == shadeInfo.deviceNetworkId
+        dev = getChildDevices()?.find { aChild ->
+            aChild.deviceNetworkId == shadeInfo.deviceNetworkId
         }
     }
 
     if (!dev) {
-        def addedDevice = addChildDevice(
-            "johnvey", 
-            "Hunter Douglas PowerView Shade", 
+        addChildDevice(
+            'johnvey',
+            'Hunter Douglas PowerView Shade',
             shadeInfo.deviceNetworkId,
             getHubID(),
             [name: shadeInfo.id, label: shadeInfo.label, completedSetup: true]
@@ -428,8 +428,8 @@ def installSelectedScenes() {
 
     // remove the scenes that are installed but are not checked by the user
     def toRemove = getDiscoveredSceneList() - settings.selectedScenes
-    toRemove?.each {
-        def deviceId = sceneEnumToId(it)
+    toRemove?.each { aScene ->
+        def deviceId = sceneEnumToId(aScene)
         log.info("Remove scene deviceId=$deviceId")
         try {
             deleteChildDevice(deviceId)
@@ -439,8 +439,8 @@ def installSelectedScenes() {
     }
 
     // iterate over the enum label
-    settings.selectedScenes?.each {
-        installScene(it)
+    settings.selectedScenes?.each { aScene ->
+        installScene(aScene)
     }
 }
 
@@ -461,15 +461,15 @@ def installScene(enumLabel) {
     def selectedDevice = currentChildDevices.find { sceneInfo.deviceNetworkId }
     def dev
     if (selectedDevice) {
-        dev = getChildDevices()?.find {
-            it.deviceNetworkId == sceneInfo.deviceNetworkId
+        dev = getChildDevices()?.find { aChild ->
+            aChild.deviceNetworkId == sceneInfo.deviceNetworkId
         }
     }
 
     if (!dev) {
-        def addedDevice = addChildDevice(
-            "johnvey", 
-            "Hunter Douglas PowerView Scene", 
+        addChildDevice(
+            'johnvey',
+            'Hunter Douglas PowerView Scene',
             sceneInfo.deviceNetworkId,
             getHubID(),
             [name: sceneInfo.id, label: sceneInfo.label, completedSetup: true]
@@ -484,9 +484,9 @@ def installScene(enumLabel) {
 }
 
 def removeAddedScenes() {
-    state.addedSceneIds?.each {
-        log.info("Remove scene deviceId=$it")
-        deleteChildDevice(it)
+    state.addedSceneIds?.each { aScene ->
+        log.info("Remove scene deviceId=$aScene")
+        deleteChildDevice(aScene)
     }
     state.addedSceneIds = []
 }
@@ -499,8 +499,8 @@ def installSelectedSceneCollections() {
 
     // remove the scene collections that are installed but are not checked by the user
     def toRemove = getDiscoveredSceneCollectionList() - settings.selectedSceneCollections
-    toRemove?.each {
-        def deviceId = sceneCollectionEnumToId(it)
+    toRemove?.each { aCollection ->
+        def deviceId = sceneCollectionEnumToId(aCollection)
         log.info("Remove scene collection deviceId=$deviceId")
         try {
             deleteChildDevice(deviceId)
@@ -510,8 +510,8 @@ def installSelectedSceneCollections() {
     }
 
     // iterate over the enum label
-    settings.selectedSceneCollections?.each {
-        installSceneCollection(it)
+    settings.selectedSceneCollections?.each { aCollection ->
+        installSceneCollection(aCollection)
     }
 }
 
@@ -532,15 +532,15 @@ def installSceneCollection(enumLabel) {
     def selectedDevice = currentChildDevices.find { sceneCollectionInfo.deviceNetworkId }
     def dev
     if (selectedDevice) {
-        dev = getChildDevices()?.find {
-            it.deviceNetworkId == sceneCollectionInfo.deviceNetworkId
+        dev = getChildDevices()?.find { aChild ->
+            aChild.deviceNetworkId == sceneCollectionInfo.deviceNetworkId
         }
     }
 
     if (!dev) {
-        def addedDevice = addChildDevice(
-            "johnvey", 
-            "Hunter Douglas PowerView Scene Collection", 
+        addChildDevice(
+            'johnvey',
+            'Hunter Douglas PowerView Scene Collection',
             sceneCollectionInfo.deviceNetworkId,
             getHubID(),
             [name: sceneCollectionInfo.id, label: sceneCollectionInfo.label, completedSetup: true]
@@ -555,20 +555,18 @@ def installSceneCollection(enumLabel) {
 }
 
 def removeAddedSceneCollections() {
-    state.addedSceneCollectionIds?.each {
-        log.info("Remove scene collection deviceId=$it")
-        deleteChildDevice(it)
+    state.addedSceneCollectionIds?.each { aCollection ->
+        log.info("Remove scene collection deviceId=$aCollection")
+        deleteChildDevice(aCollection)
     }
     state.addedSceneCollectionIds = []
 }
-
 
 // ----------------------------------------------------------------------------
 // HTTP methods
 // ----------------------------------------------------------------------------
 
 private sendRequest(method, path, body='', callbackFn) {
-
     def host = state.hubIP
     def port = state.hubPort
 
@@ -590,24 +588,23 @@ private sendRequest(method, path, body='', callbackFn) {
     sendHubCommand(hubAction)
 }
 
-
 // ----------------------------------------------------------------------------
 // app lifecycle hooks
 // ----------------------------------------------------------------------------
 
 /**
- * called when SmartApp is first added; is a no-op here becuase we handle
+ * called when SmartApp is first added; is a no-op here because we handle
  * everything via updated()
  */
 def installed() {
-    log.info "CMD installed"
+    log.info 'CMD installed'
 }
 
 /**
  * called when SmartApp pref pane clicked 'done'
  */
 def updated() {
-    log.info "CMD updated"
+    log.info 'CMD updated'
     installSelectedShades()
     installSelectedScenes()
     installSelectedSceneCollections()
@@ -617,8 +614,8 @@ def updated() {
  * Called when SmartApp is removed
  */
 def uninstalled() {
-    log.info "CMD uninstalled"
-    getChildDevices().each {
-        deleteChildDevice(it.deviceNetworkId)
+    log.info 'CMD uninstalled'
+    getChildDevices().each { aChild ->
+        deleteChildDevice(aChild.deviceNetworkId)
     }
 }
